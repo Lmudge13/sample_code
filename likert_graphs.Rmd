@@ -1,0 +1,26 @@
+---
+title: "likert_example"
+author: "lkmudge"
+date: "February 27, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+# Load data
+
+```{r}
+surveyQ <- read_csv("C:/Users/lmudg_000/Dropbox/Perceptions Rework 2016-2017/crm.csv")
+
+surveyQ <- surveyQ %>%
+  select(survey, cluster, age, 54:58)
+
+names(surveyQ) <- c("survey_n", "cluster", "age", "Q1", "Q2", "Q3", "Q4", "Q5")
+
+write_csv(surveyQ, "surveyQ.csv")
+
+```
+
