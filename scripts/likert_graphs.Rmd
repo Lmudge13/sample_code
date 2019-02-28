@@ -1,6 +1,6 @@
 ---
 title: "Data Vis for Likert Questions"
-author: "lkmudge"
+author: "Laura Mudge"
 date: "February 27, 2019"
 output: html_document
 editor_options: 
