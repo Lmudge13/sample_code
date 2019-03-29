@@ -1,0 +1,8 @@
+name: "sample_code"
+navbar:
+  title: "Sample Code in R"
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "About"
+      href: about.html
