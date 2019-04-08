@@ -1,8 +1,10 @@
 ---
 title: "Data Vis for Likert Questions"
 author: "Laura Mudge"
-date: "February 27, 2019"
-output: html_document
+date: "`r format(Sys.Date())`"
+output:
+  html_document:
+    keep_md: TRUE
 editor_options: 
   chunk_output_type: console
 ---
