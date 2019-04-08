@@ -1,6 +1,6 @@
 ---
 title: "Visualizing Mixed-effects Models"
-author: "lkmudge"
+author: "Laura Mudge"
 date: "`r format(Sys.Date())`"
 output:
   html_document:
