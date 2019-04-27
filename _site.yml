@@ -1,8 +1,13 @@
-name: "sample_code"
+name: "R Tutorials"
+output_dir: "."
 navbar:
-  title: "Sample Code in R"
+  title: "R Tutorials"
   left:
-    - text: "Home"
-      href: index.html
-    - text: "Tutorials"
-      href: tutorials.html
+    - text: "likert_graphs"
+      href: likert_graphs.html
+    - text: "mixed_effects"
+      href: mixed_effects.html
+output:
+  html_document:
+    theme: yeti
+    css: 'styles.css'

@@ -1,5 +1,6 @@
 ---
-title: "Sample Code in R"
+title: "R Tutorials"
 ---
+<link rel="stylesheet" href="styles.css" type="text/css">
 
-Hello, Website!
+Here are some basic R tutorials and sample code. Check back often as I plan to make new code snippets for neat things I learn in R.
