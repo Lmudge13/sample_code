@@ -1,7 +1,7 @@
 ---
 title: "Data Vis for Likert Questions"
 author: "Laura Mudge"
-date: "2019-04-08"
+date: "2019-04-26"
 output:
   html_document:
     keep_md: TRUE

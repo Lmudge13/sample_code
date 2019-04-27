@@ -1,7 +1,7 @@
 ---
 title: "Visualizing Mixed-effects Models"
 author: "Laura Mudge"
-date: "2019-04-08"
+date: "2019-04-26"
 output:
   html_document:
     keep_md: TRUE
@@ -19,17 +19,6 @@ Data = use the "mixedeff_herbivore.csv" file in the sample_data folder. This is 
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse) #for all data wrangling
-```
-
-```
-## Warning: package 'tidyverse' was built under R version 3.5.3
-```
-
-```
-## Warning: package 'dplyr' was built under R version 3.5.3
-```
-
-```r
 library(cowplot) #for manuscript ready figures
 library(lme4) #for lmer & glmer models
 ```
