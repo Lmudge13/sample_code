@@ -1,0 +1,164 @@
+---
+title: 'Example Data Cleaning: Reef Check'
+author: "lkm"
+date: "9/12/2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning= FALSE)
+knitr::opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+
+library(tidyverse)
+library(kableExtra)
+  
+```
+
+
+ 
+## Read and Review Data
+Goal= cleaned data frame with average percent coral cover per transect survey, with additional information needed for the master coral database.
+```{r data}    
+
+#read in original csv file
+
+rc_carib_substrate <- read_csv("sample_data/Reef_Check_Caribbean_Substrate.csv")
+
+# clean column names- lowercase, no spaces
+rc_carib_substrate <- janitor::clean_names(rc_carib_substrate)
+
+#Look at number of sites and countries in this dataset
+
+length(unique(rc_carib_substrate$reef_name)) #612 unique reefs
+length(unique(rc_carib_substrate$country)) #28 countries
+
+
+#substrate_codes
+unique(rc_carib_substrate$substrate_code)
+length(unique(rc_carib_substrate$substrate_code)) #10 types
+
+# Review a sample of data
+rc_carib_substrate[1:10,] %>%
+ kableExtra::kable(caption="Raw Reef Check Data") %>%
+  kable_styling(bootstrap_options = "condensed", full_width=F)
+
+
+```
+</br></br>
+
+# Cleaning Reef Check Data - Caribbean  
+* Cleaning steps:  
+    * A: Calculate percent cover of each substrate code PER SEGMENT  
+        * 1- Group by reef id, year, data, segment code, substrate code  
+        * 2- Create the "perc_seg" variable that is the % cover of each substrate code per segment  
+      
+    * B: Calculate percent cover of each substrate code PER SURVEY  
+        * 1- Group by reef_id, year, date, and substrate code  
+        * 2- Create variable "perc_cov", which is the average percent cover for the transect, based off the "perc_seg" column  ; Create n_samples by counting the number of segment codes, based on the grouping 
+        
+    * C: Clean columns to bind later with master_coral  
+        * 1- Pick distinct columns to keep  
+        * 2- Remove cols don't need  
+        * 3- Combine cover and sd data for substrate code- need to do this because can't use spread on 2 cols  
+        * 4- Spread data so coral and macro have their own column  
+        * 5- Split the cover & sd data into 2 separate columns  
+        * 6- Unite deg_min_sec data into 1 col for lat and lon- convert later  
+        * 7- Rename and mutate some columns  
+        * 8- Convert lat and lon into correct format  
+        * 9- Final column type cleaning (numeric values, create 4 digit years)
+```{r data_clean}
+
+
+#A: percent cover of each substrate code PER SEGMENT (ie out of 40 points)
+rc_carib_substrate <- rc_carib_substrate %>%
+  group_by(reef_id, year, date, segment_code, substrate_code) %>%
+  mutate(perc_seg= (total/40)*100)
+
+  #Note, if try to do % by segment and by survey at same time, the values are the same because of the way group_by is done-- this is why i separated this process into 2 steps
+
+
+#B: Percent cover of each substrate code PER SURVEY (out of 160 points, or average of all the segments for that survey)
+  #Note: 8/20/18- Found that for some locations, there was more than 1 survey done on a particular day. To keep surveys separate, need to also group by "depth"
+rc_carib_substrate <- rc_carib_substrate %>%
+  group_by(reef_id, year, date, substrate_code, depth) %>%
+  mutate(perc_cov= round(mean(perc_seg), 2),
+         sd_cov= round(sd(perc_seg),2),
+         n_samples = length(segment_code)) #this will tell me how many segments were completed!
+  
+#C: Clean columns to be in a good format to bind rows to master_coral dataframe
+
+rc_carib_to_bind <- rc_carib_substrate %>% 
+  #1 find distinct surveys- for reef check these are the unique variables
+  distinct(reef_id, date, depth, substrate_code, .keep_all = TRUE) %>%
+  
+  #2 get rid of columns we no longer need
+  select(-segment_code, -total, -state_province_island, -city_town, -perc_seg, - errors, -what_errors) %>%
+  
+  #3 filter out the 2 substrate codes of interest, hard coral (HC) & algae (NI)
+  filter(substrate_code == "HC" | substrate_code == "NI") %>%
+  
+  #can't use spread on 2 cols, so combo % cov and sd, separated by _
+  unite(temp, perc_cov, sd_cov, sep="_") %>%
+  
+  #4 use spread to put the % cover of each substrate code into its own column
+  spread(substrate_code, temp) %>%
+  
+  #5 break apart HC and NI data back into cover and sd
+  separate(HC, into= c("coral", "coral_std"), sep="_", remove=TRUE) %>%
+  separate(NI, into= c("macro", "macro_std"), sep="_", remove= TRUE) %>%
+  
+  #6 Unite lat and lon col with deg_min_sec together
+  unite(lat, latitude_degrees, latitude_minutes, latitude_seconds, sep =" ") %>%
+  unite(lon, longitude_degrees, longitude_minutes, longitude_seconds, sep = " ") %>%
+  
+  #7 rename columns 
+  rename(source_id = reef_id, depth_m=depth) %>%
+  mutate(subregion = "caribbean",
+         method= "line_transect",
+         orig_source = "reef_check",
+         data_source = "reef_check",
+         t_length = 20) %>%
+  separate(date, into= c("day", "month", "year"), sep="-", remove=TRUE)
+
+
+
+
+#8: Converting the lat and lon from deg_min_sec to dec_deg formats. Use measurements package to do the conversion:
+
+rc_carib_to_bind$lat <- measurements::conv_unit(rc_carib_to_bind$lat, "deg_min_sec", "dec_deg")
+
+rc_carib_to_bind$lon <- measurements::conv_unit(rc_carib_to_bind$lon, "deg_min_sec", "dec_deg")
+
+  #Make sure to put lat and lon as numeric
+rc_carib_to_bind$lon <- as.numeric(rc_carib_to_bind$lon)
+rc_carib_to_bind$lat <- as.numeric(rc_carib_to_bind$lat)
+
+#9: Turn year into 4 digits (note: this data is from 2006-2017 so we can just add 20 to the beginning of each element)
+
+rc_carib_to_bind$year <- paste(20, rc_carib_to_bind$year, sep="")
+rc_carib_to_bind$day <- as.numeric(rc_carib_to_bind$day)
+rc_carib_to_bind$year <- as.numeric(rc_carib_to_bind$year)
+
+  #make coral data numeric
+rc_carib_to_bind$coral <- as.numeric(rc_carib_to_bind$coral)
+rc_carib_to_bind$coral_std <- as.numeric(rc_carib_to_bind$coral_std)
+rc_carib_to_bind$macro <- as.numeric(rc_carib_to_bind$macro)
+rc_carib_to_bind$macro_std <- as.numeric(rc_carib_to_bind$macro_std)
+
+
+```
+</br></br>
+
+# Check Data
+```{r data_check}
+# Preview a sample of data:
+
+rc_carib_to_bind[1:10,] %>%
+  arrange(reef_name) %>%
+  kableExtra::kable(caption="Coral and Macroalgae % Cover from Caribbean Reef Check Surveys") %>%
+  kable_styling(bootstrap_options = "condensed", full_width=F)
+```
+
