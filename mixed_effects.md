@@ -1,7 +1,7 @@
 ---
 title: "Visualizing Mixed-effects Models"
 author: "Laura Mudge"
-date: "2019-04-26"
+date: "2019-09-12"
 output:
   html_document:
     keep_md: TRUE
@@ -21,52 +21,12 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse) #for all data wrangling
 library(cowplot) #for manuscript ready figures
 library(lme4) #for lmer & glmer models
-```
-
-```
-## Warning: package 'lme4' was built under R version 3.5.3
-```
-
-```r
 library(sjPlot) #for plotting lmer and glmer mods
-```
-
-```
-## Warning: package 'sjPlot' was built under R version 3.5.3
-```
-
-```
-## Warning in checkMatrixPackageVersion(): Package version inconsistency detected.
-## TMB was built with Matrix version 1.2.17
-## Current Matrix version is 1.2.15
-## Please re-install 'TMB' from source using install.packages('TMB', type = 'source') or ask CRAN for a binary version of 'TMB' matching CRAN's 'Matrix' package
-```
-
-```r
 library(sjmisc) 
-```
-
-```
-## Warning: package 'sjmisc' was built under R version 3.5.3
-```
-
-```r
 library(effects)
-```
-
-```
-## Warning: package 'effects' was built under R version 3.5.3
-```
-
-```r
 library(sjstats) #use for r2 functions
-```
 
-```
-## Warning: package 'sjstats' was built under R version 3.5.3
-```
 
-```r
 me_data <- read_csv("C:/github/sample_code/sample_data/mixedeff_herbivore.csv")
 ```
 
@@ -132,10 +92,6 @@ This would definitely be useful if you have a lot of fixed effects!
 sjPlot::plot_model(mod)
 ```
 
-```
-## Computing p-values via Wald-statistics approximation (treating t as Wald z).
-```
-
 ![](mixed_effects_files/figure-html/plotmod-1.png)<!-- -->
 
 ## Formatted plot of effect sizes:
@@ -151,10 +107,6 @@ sjPlot::plot_model(mod,
                    title="Effect of Herbivores on Coral Cover")
 ```
 
-```
-## Computing p-values via Wald-statistics approximation (treating t as Wald z).
-```
-
 ![](mixed_effects_files/figure-html/plotmod2-1.png)<!-- -->
 
 # Table output of model results:
@@ -167,7 +119,8 @@ sjPlot:: tab_model(mod)
 ```
 
 ```
-## Computing p-values via Wald-statistics approximation (treating t as Wald z).
+## Warning: Can't compute random effect variances. Some variance components equal zero.
+##   Solution: Respecify random structure!
 ```
 
 <table style="border-collapse:collapse; border:none;">
@@ -218,11 +171,15 @@ sjPlot:: tab_model(mod)
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="3">0.00</td>
 
 <tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">ICC <sub>site</sub></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="3">0.00</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">N <sub>site</sub></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="3">9</td>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm; border-top:1px solid;">Observations</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left; border-top:1px solid;" colspan="3">32</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">Marginal R<sup>2</sup> / Conditional R<sup>2</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="3">0.180 / NA</td>
 </tr>
 
 </table>
@@ -238,7 +195,8 @@ sjPlot::tab_model(mod,
 ```
 
 ```
-## Computing p-values via Wald-statistics approximation (treating t as Wald z).
+## Warning: Can't compute random effect variances. Some variance components equal zero.
+##   Solution: Respecify random structure!
 ```
 
 <table style="border-collapse:collapse; border:none;">
@@ -289,11 +247,15 @@ sjPlot::tab_model(mod,
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="3">0.00</td>
 
 <tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">ICC <sub>site</sub></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="3">0.00</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">N <sub>site</sub></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="3">9</td>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm; border-top:1px solid;">Observations</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left; border-top:1px solid;" colspan="3">32</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">Marginal R<sup>2</sup> / Conditional R<sup>2</sup></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="3">0.180 / NA</td>
 </tr>
 
 </table>

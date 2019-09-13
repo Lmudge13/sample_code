@@ -7,11 +7,12 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 <meta name="author" content="Laura Mudge" />
 
-<meta name="date" content="2019-04-26" />
+<meta name="date" content="2019-09-12" />
 
 <title>Visualizing Mixed-effects Models</title>
 
@@ -72,9 +73,7 @@ h6 {
 
 <link rel="stylesheet" href="styles.css" type="text/css" />
 
-</head>
 
-<body>
 
 <style type = "text/css">
 .main-container {
@@ -193,8 +192,6 @@ $(document).ready(function () {
 });
 </script>
 
-<div class="container-fluid main-container">
-
 <!-- tabsets -->
 
 <style type="text/css">
@@ -251,20 +248,17 @@ $(document).ready(function () {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
 
 
 
@@ -282,10 +276,13 @@ $(document).ready(function () {
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="likert_graphs.html">likert_graphs</a>
+  <a href="likert_graphs.html">Likert graphs</a>
 </li>
 <li>
-  <a href="mixed_effects.html">mixed_effects</a>
+  <a href="mixed_effects.html">Mixed effects models</a>
+</li>
+<li>
+  <a href="data_cleaning.html">Data cleaning</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -300,8 +297,8 @@ $(document).ready(function () {
 
 
 <h1 class="title toc-ignore">Visualizing Mixed-effects Models</h1>
-<h4 class="author"><em>Laura Mudge</em></h4>
-<h4 class="date"><em>2019-04-26</em></h4>
+<h4 class="author">Laura Mudge</h4>
+<h4 class="date">2019-09-12</h4>
 
 </div>
 
@@ -317,21 +314,14 @@ $(document).ready(function () {
 
 library(tidyverse) #for all data wrangling
 library(cowplot) #for manuscript ready figures
-library(lme4) #for lmer &amp; glmer models</code></pre>
-<pre><code>## Warning: package &#39;lme4&#39; was built under R version 3.5.3</code></pre>
-<pre class="r"><code>library(sjPlot) #for plotting lmer and glmer mods</code></pre>
-<pre><code>## Warning: package &#39;sjPlot&#39; was built under R version 3.5.3</code></pre>
-<pre><code>## Warning in checkMatrixPackageVersion(): Package version inconsistency detected.
-## TMB was built with Matrix version 1.2.17
-## Current Matrix version is 1.2.15
-## Please re-install &#39;TMB&#39; from source using install.packages(&#39;TMB&#39;, type = &#39;source&#39;) or ask CRAN for a binary version of &#39;TMB&#39; matching CRAN&#39;s &#39;Matrix&#39; package</code></pre>
-<pre class="r"><code>library(sjmisc) </code></pre>
-<pre><code>## Warning: package &#39;sjmisc&#39; was built under R version 3.5.3</code></pre>
-<pre class="r"><code>library(effects)</code></pre>
-<pre><code>## Warning: package &#39;effects&#39; was built under R version 3.5.3</code></pre>
-<pre class="r"><code>library(sjstats) #use for r2 functions</code></pre>
-<pre><code>## Warning: package &#39;sjstats&#39; was built under R version 3.5.3</code></pre>
-<pre class="r"><code>me_data &lt;- read_csv(&quot;C:/github/sample_code/sample_data/mixedeff_herbivore.csv&quot;)</code></pre>
+library(lme4) #for lmer &amp; glmer models
+library(sjPlot) #for plotting lmer and glmer mods
+library(sjmisc) 
+library(effects)
+library(sjstats) #use for r2 functions
+
+
+me_data &lt;- read_csv(&quot;C:/github/sample_code/sample_data/mixedeff_herbivore.csv&quot;)</code></pre>
 </div>
 <div id="create-a-basic-mixed-effects-model" class="section level1">
 <h1>Create a basic mixed-effects model:</h1>
@@ -381,7 +371,6 @@ mod &lt;- lme4::lmer(log(elkhorn_LAI) ~ c.urchinden + c.fishmass +c.maxD + (1|si
 <div id="unformatted-plot-of-effect-sizes" class="section level2">
 <h2>Unformatted plot of effect sizes</h2>
 <pre class="r"><code>sjPlot::plot_model(mod)</code></pre>
-<pre><code>## Computing p-values via Wald-statistics approximation (treating t as Wald z).</code></pre>
 <p><img src="mixed_effects_files/figure-html/plotmod-1.png" /><!-- --></p>
 </div>
 <div id="formatted-plot-of-effect-sizes" class="section level2">
@@ -394,7 +383,6 @@ sjPlot::plot_model(mod,
                    axis.labels=c(&quot;Urchin&quot;, &quot;Depth&quot;, &quot;Fish&quot;),
                    show.values=TRUE, show.p=TRUE,
                    title=&quot;Effect of Herbivores on Coral Cover&quot;)</code></pre>
-<pre><code>## Computing p-values via Wald-statistics approximation (treating t as Wald z).</code></pre>
 <p><img src="mixed_effects_files/figure-html/plotmod2-1.png" /><!-- --></p>
 </div>
 </div>
@@ -404,7 +392,8 @@ sjPlot::plot_model(mod,
 <div id="unformatted-table" class="section level3">
 <h3>Unformatted table</h3>
 <pre class="r"><code>sjPlot:: tab_model(mod)</code></pre>
-<pre><code>## Computing p-values via Wald-statistics approximation (treating t as Wald z).</code></pre>
+<pre><code>## Warning: Can&#39;t compute random effect variances. Some variance components equal zero.
+##   Solution: Respecify random structure!</code></pre>
 <table style="border-collapse:collapse; border:none;">
 <tr>
 <th style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm;  text-align:left; ">
@@ -505,10 +494,10 @@ Random Effects
 </td>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">
-ICC <sub>site</sub>
+N <sub>site</sub>
 </td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="3">
-0.00
+9
 </td>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm; border-top:1px solid;">
@@ -516,6 +505,14 @@ Observations
 </td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left; border-top:1px solid;" colspan="3">
 32
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">
+Marginal R<sup>2</sup> / Conditional R<sup>2</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="3">
+0.180 / NA
 </td>
 </tr>
 </table>
@@ -527,7 +524,8 @@ sjPlot::tab_model(mod,
                   show.re.var= TRUE, 
                   pred.labels =c(&quot;(Intercept)&quot;, &quot;Urchins&quot;, &quot;Fish&quot;, &quot;Depth&quot;),
                   dv.labels= &quot;Effects of Herbivores on Coral Cover&quot;)</code></pre>
-<pre><code>## Computing p-values via Wald-statistics approximation (treating t as Wald z).</code></pre>
+<pre><code>## Warning: Can&#39;t compute random effect variances. Some variance components equal zero.
+##   Solution: Respecify random structure!</code></pre>
 <table style="border-collapse:collapse; border:none;">
 <tr>
 <th style="border-top: double; text-align:center; font-style:normal; font-weight:bold; padding:0.2cm;  text-align:left; ">
@@ -628,10 +626,10 @@ Random Effects
 </td>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">
-ICC <sub>site</sub>
+N <sub>site</sub>
 </td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="3">
-0.00
+9
 </td>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm; border-top:1px solid;">
@@ -639,6 +637,14 @@ Observations
 </td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left; border-top:1px solid;" colspan="3">
 32
+</td>
+</tr>
+<tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">
+Marginal R<sup>2</sup> / Conditional R<sup>2</sup>
+</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="3">
+0.180 / NA
 </td>
 </tr>
 </table>
@@ -722,6 +728,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

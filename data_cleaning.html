@@ -276,10 +276,13 @@ $(document).ready(function () {
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="likert_graphs.html">likert_graphs</a>
+  <a href="likert_graphs.html">Likert graphs</a>
 </li>
 <li>
-  <a href="mixed_effects.html">mixed_effects</a>
+  <a href="mixed_effects.html">Mixed effects models</a>
+</li>
+<li>
+  <a href="data_cleaning.html">Data cleaning</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -303,7 +306,7 @@ $(document).ready(function () {
 <div id="read-and-review-data" class="section level2">
 <h2>Read and Review Data</h2>
 <p>Goal= cleaned data frame with average percent coral cover per transect survey, with additional information needed for the master coral database.</p>
-<pre class="r"><code>#read in original csv file
+<pre class="r"><code># read in original csv file
 
 rc_carib_substrate &lt;- read_csv(&quot;sample_data/Reef_Check_Caribbean_Substrate.csv&quot;)</code></pre>
 <pre><code>## Parsed with column specification:
@@ -324,21 +327,20 @@ rc_carib_substrate &lt;- read_csv(&quot;sample_data/Reef_Check_Caribbean_Substra
 <pre class="r"><code># clean column names- lowercase, no spaces
 rc_carib_substrate &lt;- janitor::clean_names(rc_carib_substrate)
 
-#Look at number of sites and countries in this dataset
+# Look at number of sites and countries in this dataset
 
-length(unique(rc_carib_substrate$reef_name)) #612 unique reefs</code></pre>
+length(unique(rc_carib_substrate$reef_name))  #612 unique reefs</code></pre>
 <pre><code>## [1] 612</code></pre>
-<pre class="r"><code>length(unique(rc_carib_substrate$country)) #28 countries</code></pre>
+<pre class="r"><code>length(unique(rc_carib_substrate$country))  #28 countries</code></pre>
 <pre><code>## [1] 28</code></pre>
-<pre class="r"><code>#substrate_codes
+<pre class="r"><code># substrate_codes
 unique(rc_carib_substrate$substrate_code)</code></pre>
 <pre><code>##  [1] &quot;HC&quot; &quot;NI&quot; &quot;OT&quot; &quot;RB&quot; &quot;RC&quot; &quot;RK&quot; &quot;SC&quot; &quot;SD&quot; &quot;SI&quot; &quot;SP&quot;</code></pre>
-<pre class="r"><code>length(unique(rc_carib_substrate$substrate_code)) #10 types</code></pre>
+<pre class="r"><code>length(unique(rc_carib_substrate$substrate_code))  #10 types</code></pre>
 <pre><code>## [1] 10</code></pre>
 <pre class="r"><code># Review a sample of data
-rc_carib_substrate[1:10,] %&gt;%
- kableExtra::kable(caption=&quot;Raw Reef Check Data&quot;) %&gt;%
-  kable_styling(bootstrap_options = &quot;condensed&quot;, full_width=F)</code></pre>
+rc_carib_substrate[1:10, ] %&gt;% kableExtra::kable(caption = &quot;Raw Reef Check Data&quot;) %&gt;% 
+    kable_styling(bootstrap_options = &quot;condensed&quot;, full_width = F)</code></pre>
 <table class="table table-condensed" style="width: auto !important; margin-left: auto; margin-right: auto;">
 <caption>
 Raw Reef Check Data
@@ -1137,77 +1139,84 @@ Atlantic
 </ul></li>
 </ul></li>
 </ul>
-<pre class="r"><code>#A: percent cover of each substrate code PER SEGMENT (ie out of 40 points)
-rc_carib_substrate &lt;- rc_carib_substrate %&gt;%
-  group_by(reef_id, year, date, segment_code, substrate_code) %&gt;%
-  mutate(perc_seg= (total/40)*100)
+<pre class="r"><code># A: percent cover of each substrate code PER SEGMENT (ie out
+# of 40 points)
+rc_carib_substrate &lt;- rc_carib_substrate %&gt;% group_by(reef_id, 
+    year, date, segment_code, substrate_code) %&gt;% mutate(perc_seg = (total/40) * 
+    100)
 
-  #Note, if try to do % by segment and by survey at same time, the values are the same because of the way group_by is done-- this is why i separated this process into 2 steps
-
-
-#B: Percent cover of each substrate code PER SURVEY (out of 160 points, or average of all the segments for that survey)
-  #Note: 8/20/18- Found that for some locations, there was more than 1 survey done on a particular day. To keep surveys separate, need to also group by &quot;depth&quot;
-rc_carib_substrate &lt;- rc_carib_substrate %&gt;%
-  group_by(reef_id, year, date, substrate_code, depth) %&gt;%
-  mutate(perc_cov= round(mean(perc_seg), 2),
-         sd_cov= round(sd(perc_seg),2),
-         n_samples = length(segment_code)) #this will tell me how many segments were completed!
-  
-#C: Clean columns to be in a good format to bind rows to master_coral dataframe
-
-rc_carib_to_bind &lt;- rc_carib_substrate %&gt;% 
-  #1 find distinct surveys- for reef check these are the unique variables
-  distinct(reef_id, date, depth, substrate_code, .keep_all = TRUE) %&gt;%
-  
-  #2 get rid of columns we no longer need
-  select(-segment_code, -total, -state_province_island, -city_town, -perc_seg, - errors, -what_errors) %&gt;%
-  
-  #3 filter out the 2 substrate codes of interest, hard coral (HC) &amp; algae (NI)
-  filter(substrate_code == &quot;HC&quot; | substrate_code == &quot;NI&quot;) %&gt;%
-  
-  #can&#39;t use spread on 2 cols, so combo % cov and sd, separated by _
-  unite(temp, perc_cov, sd_cov, sep=&quot;_&quot;) %&gt;%
-  
-  #4 use spread to put the % cover of each substrate code into its own column
-  spread(substrate_code, temp) %&gt;%
-  
-  #5 break apart HC and NI data back into cover and sd
-  separate(HC, into= c(&quot;coral&quot;, &quot;coral_std&quot;), sep=&quot;_&quot;, remove=TRUE) %&gt;%
-  separate(NI, into= c(&quot;macro&quot;, &quot;macro_std&quot;), sep=&quot;_&quot;, remove= TRUE) %&gt;%
-  
-  #6 Unite lat and lon col with deg_min_sec together
-  unite(lat, latitude_degrees, latitude_minutes, latitude_seconds, sep =&quot; &quot;) %&gt;%
-  unite(lon, longitude_degrees, longitude_minutes, longitude_seconds, sep = &quot; &quot;) %&gt;%
-  
-  #7 rename columns 
-  rename(source_id = reef_id, depth_m=depth) %&gt;%
-  mutate(subregion = &quot;caribbean&quot;,
-         method= &quot;line_transect&quot;,
-         orig_source = &quot;reef_check&quot;,
-         data_source = &quot;reef_check&quot;,
-         t_length = 20) %&gt;%
-  separate(date, into= c(&quot;day&quot;, &quot;month&quot;, &quot;year&quot;), sep=&quot;-&quot;, remove=TRUE)
+# Note, if try to do % by segment and by survey at same time,
+# the values are the same because of the way group_by is
+# done-- this is why i separated this process into 2 steps
 
 
+# B: Percent cover of each substrate code PER SURVEY (out of
+# 160 points, or average of all the segments for that survey)
+# Note: 8/20/18- Found that for some locations, there was
+# more than 1 survey done on a particular day. To keep
+# surveys separate, need to also group by &#39;depth&#39;
+rc_carib_substrate &lt;- rc_carib_substrate %&gt;% group_by(reef_id, 
+    year, date, substrate_code, depth) %&gt;% mutate(perc_cov = round(mean(perc_seg), 
+    2), sd_cov = round(sd(perc_seg), 2), n_samples = length(segment_code))  #this will tell me how many segments were completed!
+
+# C: Clean columns to be in a good format to bind rows to
+# master_coral dataframe
+
+rc_carib_to_bind &lt;- rc_carib_substrate %&gt;% # 1 find distinct surveys- for reef check these are the
+# unique variables
+distinct(reef_id, date, depth, substrate_code, .keep_all = TRUE) %&gt;% 
+    
+# 2 get rid of columns we no longer need
+select(-segment_code, -total, -state_province_island, -city_town, 
+    -perc_seg, -errors, -what_errors) %&gt;% 
+# 3 filter out the 2 substrate codes of interest, hard coral
+# (HC) &amp; algae (NI)
+filter(substrate_code == &quot;HC&quot; | substrate_code == &quot;NI&quot;) %&gt;% 
+# can&#39;t use spread on 2 cols, so combo % cov and sd,
+# separated by _
+unite(temp, perc_cov, sd_cov, sep = &quot;_&quot;) %&gt;% 
+# 4 use spread to put the % cover of each substrate code into
+# its own column
+spread(substrate_code, temp) %&gt;% 
+# 5 break apart HC and NI data back into cover and sd
+separate(HC, into = c(&quot;coral&quot;, &quot;coral_std&quot;), sep = &quot;_&quot;, remove = TRUE) %&gt;% 
+    separate(NI, into = c(&quot;macro&quot;, &quot;macro_std&quot;), sep = &quot;_&quot;, remove = TRUE) %&gt;% 
+    
+# 6 Unite lat and lon col with deg_min_sec together
+unite(lat, latitude_degrees, latitude_minutes, latitude_seconds, 
+    sep = &quot; &quot;) %&gt;% unite(lon, longitude_degrees, longitude_minutes, 
+    longitude_seconds, sep = &quot; &quot;) %&gt;% 
+# 7 rename columns
+rename(source_id = reef_id, depth_m = depth) %&gt;% mutate(subregion = &quot;caribbean&quot;, 
+    method = &quot;line_transect&quot;, orig_source = &quot;reef_check&quot;, data_source = &quot;reef_check&quot;, 
+    t_length = 20) %&gt;% separate(date, into = c(&quot;day&quot;, &quot;month&quot;, 
+    &quot;year&quot;), sep = &quot;-&quot;, remove = TRUE)
 
 
-#8: Converting the lat and lon from deg_min_sec to dec_deg formats. Use measurements package to do the conversion:
 
-rc_carib_to_bind$lat &lt;- measurements::conv_unit(rc_carib_to_bind$lat, &quot;deg_min_sec&quot;, &quot;dec_deg&quot;)
 
-rc_carib_to_bind$lon &lt;- measurements::conv_unit(rc_carib_to_bind$lon, &quot;deg_min_sec&quot;, &quot;dec_deg&quot;)
+# 8: Converting the lat and lon from deg_min_sec to dec_deg
+# formats. Use measurements package to do the conversion:
 
-  #Make sure to put lat and lon as numeric
+rc_carib_to_bind$lat &lt;- measurements::conv_unit(rc_carib_to_bind$lat, 
+    &quot;deg_min_sec&quot;, &quot;dec_deg&quot;)
+
+rc_carib_to_bind$lon &lt;- measurements::conv_unit(rc_carib_to_bind$lon, 
+    &quot;deg_min_sec&quot;, &quot;dec_deg&quot;)
+
+# Make sure to put lat and lon as numeric
 rc_carib_to_bind$lon &lt;- as.numeric(rc_carib_to_bind$lon)
 rc_carib_to_bind$lat &lt;- as.numeric(rc_carib_to_bind$lat)
 
-#9: Turn year into 4 digits (note: this data is from 2006-2017 so we can just add 20 to the beginning of each element)
+# 9: Turn year into 4 digits (note: this data is from
+# 2006-2017 so we can just add 20 to the beginning of each
+# element)
 
-rc_carib_to_bind$year &lt;- paste(20, rc_carib_to_bind$year, sep=&quot;&quot;)
+rc_carib_to_bind$year &lt;- paste(20, rc_carib_to_bind$year, sep = &quot;&quot;)
 rc_carib_to_bind$day &lt;- as.numeric(rc_carib_to_bind$day)
 rc_carib_to_bind$year &lt;- as.numeric(rc_carib_to_bind$year)
 
-  #make coral data numeric
+# make coral data numeric
 rc_carib_to_bind$coral &lt;- as.numeric(rc_carib_to_bind$coral)
 rc_carib_to_bind$coral_std &lt;- as.numeric(rc_carib_to_bind$coral_std)
 rc_carib_to_bind$macro &lt;- as.numeric(rc_carib_to_bind$macro)
@@ -1218,10 +1227,8 @@ rc_carib_to_bind$macro_std &lt;- as.numeric(rc_carib_to_bind$macro_std)</code></
 <h1>Check Data</h1>
 <pre class="r"><code># Preview a sample of data:
 
-rc_carib_to_bind[1:10,] %&gt;%
-  arrange(reef_name) %&gt;%
-  kableExtra::kable(caption=&quot;Coral and Macroalgae % Cover from Caribbean Reef Check Surveys&quot;) %&gt;%
-  kable_styling(bootstrap_options = &quot;condensed&quot;, full_width=F)</code></pre>
+rc_carib_to_bind[1:10, ] %&gt;% arrange(reef_name) %&gt;% kableExtra::kable(caption = &quot;Coral and Macroalgae % Cover from Caribbean Reef Check Surveys&quot;) %&gt;% 
+    kable_styling(bootstrap_options = &quot;condensed&quot;, full_width = F)</code></pre>
 <table class="table table-condensed" style="width: auto !important; margin-left: auto; margin-right: auto;">
 <caption>
 Coral and Macroalgae % Cover from Caribbean Reef Check Surveys
