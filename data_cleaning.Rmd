@@ -69,7 +69,7 @@ rc_carib_substrate[1:10,] %>%
         * 7- Rename and mutate some columns  
         * 8- Convert lat and lon into correct format  
         * 9- Final column type cleaning (numeric values, create 4 digit years)
-```{r data_clean}
+```{r clean_reef_check_data}
 
 
 #A: percent cover of each substrate code PER SEGMENT (ie out of 40 points)
