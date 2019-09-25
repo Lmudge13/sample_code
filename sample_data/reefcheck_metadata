@@ -1,0 +1,40 @@
+Reef Check Metadata
+Created by Laura Mudge on 9-25-2019
+Data acquired from Reef Check (via email correspondence) on 3-21-2018
+
+A description of Reef Check tropical monitoring methods can be found here:
+https://reefcheck.org/ecoaction/monitoring-instruction/
+
+Variables:
+Reef ID = Reef Check's unique ID for each reef, based on lat/lon coordinates
+Reef Name = Name for each reef, entered by surveyers
+Longitude Degrees = Degree value for longitude, entered by surveyers
+Longitude Minutes = Minute value for longitude, entered by surveyers
+Longitude Seconds = Seconds value for longitude, entered by surveyers
+Longitude Cardinal Direction = Direction of longitude, will be either E for East or W for west
+Latitude Degrees = Degree value for latitude, entered by surveyers
+Latitude Minutes = Minute value for latitude, entered by surveyers
+Latitude Seconds = Seconds value for latitude, entered by surveyers
+Latitude Cardinal Direction = Direction of latitude, will be either N for north or S for south 
+Year = Year survey was conducted
+Date = Date survey was conducted, character format of DD-Month(abbrev)-YY
+depth = Depth of survey, in meters
+substrate_code = Reef Check survey substrate codes 
+  HC= Hard Coral
+  NI= Nutrient indicator algae (macro), also noted as NIA in some surveys
+  OT= Other
+  RB= Rubble
+  RK= Recently killed coral, also noted as RKC in some surveys
+  SC= Soft coral
+  SD= Sand
+  SI= Silt/Clay
+  SP= Sponge
+segment_code = Reef Check segment codes corresponding to segment # of the transect (S1, S2, S3, S4)
+total = total points counted in per substrate code, per segment
+Errors? = TRUE/FALSE are there errors in the dataset
+What errors? = Text description of errors
+Country = Country the survey was conducted in
+State/Province/Island = Location of survey
+City/Town = Location of survey
+Ocean = Ocean basic (Atlantic for all Caribbean data)
+
